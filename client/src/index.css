@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+
+  .surface-card {
+    @apply relative overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-sm ring-1 ring-white transition-all duration-300;
+  }
+
+  .surface-card:hover {
+    @apply -translate-y-0.5 border-slate-300/80 shadow-lg;
+  }
+
+  .surface-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.45) 50%, transparent 100%);
+  }
+
+  .surface-section {
+    @apply rounded-xl border border-slate-200/75 bg-white/95 shadow-sm ring-1 ring-white;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+  
+  .sidebar-item-active {
+    @apply sidebar-item bg-primary-100 text-primary-700 border-r-2 border-primary-500;
+  }
+  
+  .sidebar-item-inactive {
+    @apply sidebar-item text-gray-600 hover:text-gray-900 hover:bg-gray-50;
+  }
+}
+
+@layer utilities {
+  @keyframes metric-orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes metric-orbit-intro {
+    0% {
+      transform: scale(0.88);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.45;
+    }
+  }
+
+  .animate-metric-orbit-once {
+    animation: metric-orbit 1.4s linear 1;
+  }
+
+  .animate-metric-orbit-intro {
+    animation: metric-orbit-intro 1.2s ease-out 1;
+  }
+}
