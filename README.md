@@ -1,67 +1,289 @@
-# HRM Project v1
+# HRM System
 
-This repository now has a deployment-ready v1 path for AWS.
+A modern Human Resource Management (HRM) System built with **React** for the frontend and **FastAPI** for the backend. The application provides employee management, authentication, and other HR-related functionalities through a RESTful API.
 
-## Recommended AWS v1 setup
+---
 
-- Frontend: build the Vite app and serve it from the same EC2 host through Nginx.
-- Backend: run FastAPI with Uvicorn on the same EC2 host.
-- Database: use Amazon RDS MySQL free tier, or keep MySQL on the same EC2 instance if you want the simplest demo.
-- Real-time updates: keep the WebSocket endpoint on the same domain so cookies and auth stay simple.
+## Tech Stack
 
-## Why this version works well for a DevOps portfolio
+### Frontend
+- React
+- JavaScript
+- HTML5
+- CSS3
+- Axios
+- React Router
 
-- One-click style deployment on EC2 using a reproducible build.
-- Environment-driven configuration for API, WebSocket, and CORS.
-- Cookie-based auth still works behind Nginx and HTTPS.
-- Easy to extend with CI/CD, monitoring, and infrastructure as code later.
+### Backend
+- FastAPI
+- Uvicorn
+- SQLAlchemy
+- MySQL
+- Alembic
+- JWT Authentication
 
-## Local development
+---
 
-Client:
+## Project Structure
+
+```
+hrm-system/
+│
+├── client/                 # React frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── server/                 # FastAPI backend
+│   ├── app/
+│   ├── alembic/
+│   ├── requirements.txt
+│   ├── .env
+│   └── main.py
+│
+└── README.md
+```
+
+---
+
+# Features
+
+- Employee Management
+- User Authentication
+- JWT Authorization
+- Password Encryption (bcrypt)
+- REST API
+- Database Migrations with Alembic
+- MySQL Database Integration
+- Environment Variable Configuration
+
+---
+
+# Backend Installation
+
+## 1. Navigate to server
+
+```bash
+cd server
+```
+
+## 2. Create virtual environment
+
+### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Linux/macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+## 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+requirements.txt
+
+```
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+python-dotenv
+passlib[bcrypt]
+python-jose
+alembic
+```
+
+---
+
+## 4. Configure Environment Variables
+
+Create a `.env` file inside the `server` directory.
+
+Example:
+
+```env
+DATABASE_URL=mysql+pymysql://username:password@localhost/hrm_db
+
+SECRET_KEY=your_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+---
+
+## 5. Run Database Migrations
+
+```bash
+alembic upgrade head
+```
+
+---
+
+## 6. Start the FastAPI Server
+
+```bash
+uvicorn main:app --reload
+```
+
+Server runs at:
+
+```
+http://127.0.0.1:8000
+```
+
+Swagger Documentation:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+ReDoc Documentation:
+
+```
+http://127.0.0.1:8000/redoc
+```
+
+---
+
+# Frontend Installation
+
+Navigate to client
 
 ```bash
 cd client
+```
+
+Install dependencies
+
+```bash
 npm install
+```
+
+Run development server
+
+```bash
 npm run dev
 ```
 
-Server:
+or if using Create React App
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r server/requirements.txt
-uvicorn server.main:app --reload
+npm start
 ```
 
-## AWS deployment variables
+Frontend runs at
 
-Backend:
+```
+http://localhost:3000
+```
 
-- `ALLOWED_ORIGINS` - comma-separated frontend origins, for example `http://YOUR_EC2_PUBLIC_IP,https://your-domain.com`
-- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DB`
-- `SECRET_KEY`
-- `COOKIE_SECURE=true` once you serve the app over HTTPS
-- `COOKIE_SAMESITE=none` if frontend and backend are on different HTTPS origins
+or
 
-Frontend:
+```
+http://localhost:5173
+```
 
-- `VITE_API_URL` - optional API base URL, for example `/api` when Nginx serves both apps on the same domain
-- `VITE_WS_URL` - optional WebSocket URL, for example `wss://your-domain.com/ws/events`
+depending on your React setup.
 
-## Suggested EC2 free-tier flow
+---
 
-1. Launch an Ubuntu EC2 free-tier instance.
-2. Install Python, Node.js, MySQL client, and Nginx.
-3. Point the backend to RDS MySQL or a local MySQL instance.
-4. Build the frontend with `npm run build`.
-5. Use Nginx to serve `client/dist` and reverse proxy `/api` and `/ws` to Uvicorn.
-6. Add HTTPS with an ACM-backed load balancer or, for a leaner demo, use a self-managed certificate setup.
+# Database
 
-## Good portfolio upgrades after v1
+Supported database:
 
-- GitHub Actions for build and deployment.
-- Terraform or CloudFormation for EC2, security groups, and RDS.
-- CloudWatch logs and alarms.
-- S3 backup strategy for database exports.
+- MySQL
+
+ORM:
+
+- SQLAlchemy
+
+Migration Tool:
+
+- Alembic
+
+---
+
+# Authentication
+
+The application uses:
+
+- JWT (JSON Web Token)
+- Password hashing using bcrypt
+- Secure authentication with python-jose
+
+---
+
+# API Documentation
+
+FastAPI automatically generates API documentation.
+
+Swagger UI
+
+```
+http://localhost:8000/docs
+```
+
+ReDoc
+
+```
+http://localhost:8000/redoc
+```
+
+---
+
+# Backend Dependencies
+
+| Package | Purpose |
+|----------|---------|
+| FastAPI | API Framework |
+| Uvicorn | ASGI Server |
+| SQLAlchemy | ORM |
+| PyMySQL | MySQL Driver |
+| python-dotenv | Environment Variables |
+| passlib[bcrypt] | Password Hashing |
+| python-jose | JWT Authentication |
+| Alembic | Database Migrations |
+
+---
+
+# Development Workflow
+
+1. Clone the repository
+2. Set up the backend
+3. Configure the `.env` file
+4. Run database migrations
+5. Start the FastAPI server
+6. Set up the React frontend
+7. Start the React development server
+
+---
+
+# Future Improvements
+
+- Leave Management
+- Payroll Management
+- Attendance Tracking
+- Performance Evaluation
+- Email Notifications
+- Role-Based Access Control (RBAC)
+- Dashboard Analytics
+- Docker Support
+- CI/CD Pipeline
+- Kubernetes Deployment
+
+---
+
+# License
+
+This project is licensed under the MIT License.
