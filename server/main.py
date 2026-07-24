@@ -1,5 +1,11 @@
 
 import os
+import sys
+
+CURRENT_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +13,6 @@ from jose import JWTError, jwt
 from server.api import department, employee, job_posting, job_application, attendance, leave, notification, user, auth, settings
 from server.core.config import settings as core_settings
 from server.core.security import get_current_user
-from server.init_db import init_db
 from server.realtime import connect, disconnect
 
 
@@ -68,10 +73,6 @@ async def websocket_events(websocket: WebSocket):
     except Exception:
         await disconnect(websocket)
 
-
-@app.on_event("startup")
-def startup_db_sync():
-    init_db()
 
 @app.get("/")
 def read_root():

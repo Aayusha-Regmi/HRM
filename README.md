@@ -12,6 +12,8 @@ The repository is split into two runnable applications:
 
 The frontend talks to the backend through a cookie-based auth flow and REST endpoints. The dashboard also listens to a backend websocket for realtime events.
 
+Database schema is managed through Alembic migrations. User seeding is a separate one-off script and does not run during backend startup.
+
 ## Features
 
 - Authentication with access and refresh cookies
@@ -110,6 +112,14 @@ COOKIE_SECURE=false
 COOKIE_SAMESITE=lax
 SQL_ECHO=false
 
+# Optional: credentials used by the one-time seed script
+DEFAULT_ADMIN_USER=admin
+DEFAULT_ADMIN_EMAIL=admin@hrmapp.com
+DEFAULT_ADMIN_PASSWORD=change-me-in-secrets-manager
+DEFAULT_HR_USER=hr
+DEFAULT_HR_EMAIL=hr@hrmapp.com
+DEFAULT_HR_PASSWORD=change-me-in-secrets-manager
+
 # Optional: allow additional frontend origins
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
 ```
@@ -126,7 +136,7 @@ Create the MySQL database referenced by `MYSQL_DB` before starting the app.
 
 ### 5. Run migrations
 
-Run Alembic from the repository root so it can use the top-level `alembic.ini`:
+Run Alembic from the repository root so it can use the top-level `alembic.ini` and create the schema:
 
 ```bash
 alembic upgrade head
@@ -186,16 +196,16 @@ The backend initialization script seeds two users when the database is initializ
 - Admin user: `admin` / `Admin@2026!HRM`
 - HR manager user: `hr` / `Hr@2026!HRM`
 
-These defaults are intended for local development only. Change them before any shared or production use.
+These defaults should come from environment variables or a secret store in production. Do not commit real passwords to the repository.
 
 ## Common Commands
 
 Backend:
 
 ```bash
-uvicorn server.main:app --reload
 alembic upgrade head
-python server/init_db.py
+python -m server.seed_users
+uvicorn server.main:app --reload
 ```
 
 Frontend:
@@ -212,7 +222,9 @@ npm run lint
 - The frontend sends requests through a shared Axios client in `client/src/api/hrmApi.js`.
 - Authentication is handled with HTTP-only access and refresh cookies.
 - Protected backend routes depend on the current user and role checks.
-- The startup routine in `server/init_db.py` creates missing tables, applies lightweight schema sync, and seeds default local users.
+- The startup routine in `server/main.py` only boots the API; seeding is handled by `server/seed_users.py`.
+- `server/seed_users.py` uses MySQL upsert semantics so it can be run repeatedly without duplicate-user failures.
+- Alembic is the source of truth for table creation and schema changes.
 
 ## Troubleshooting
 
