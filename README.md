@@ -1,289 +1,229 @@
 # HRM System
 
-A modern Human Resource Management (HRM) System built with **React** for the frontend and **FastAPI** for the backend. The application provides employee management, authentication, and other HR-related functionalities through a RESTful API.
+A Human Resource Management application with a React frontend and a FastAPI backend. It supports authentication, employee and department management, attendance, leave management, job postings, job applications, notifications, and company settings.
 
----
+## Overview
+
+The repository is split into two runnable applications:
+
+- `client/` contains the React + Vite frontend.
+- `server/` contains the FastAPI backend, database models, CRUD logic, and API routes.
+- `migrations/` and `alembic.ini` provide database migration support from the repository root.
+
+The frontend talks to the backend through a cookie-based auth flow and REST endpoints. The dashboard also listens to a backend websocket for realtime events.
+
+## Features
+
+- Authentication with access and refresh cookies
+- Role-aware route protection
+- Employee, department, attendance, leave, job posting, and job application management
+- Notification and company settings endpoints
+- Realtime dashboard event updates over WebSocket
+- MySQL persistence with SQLAlchemy and Alembic
 
 ## Tech Stack
 
 ### Frontend
+
 - React
-- JavaScript
-- HTML5
-- CSS3
-- Axios
+- Vite
 - React Router
+- Axios
+- Recharts
+- Tailwind CSS
 
 ### Backend
+
 - FastAPI
 - Uvicorn
 - SQLAlchemy
-- MySQL
 - Alembic
-- JWT Authentication
+- PyMySQL
+- python-jose
+- Passlib
 
----
+## Prerequisites
+
+Install the following before setting up the project:
+
+- Python 3.10 or newer
+- Node.js 18 or newer
+- npm
+- MySQL 8 or compatible
+
+You also need a local MySQL database and permission to create tables in it.
 
 ## Project Structure
 
-```
-hrm-system/
-│
+```text
+HRM/
 ├── client/                 # React frontend
-│   ├── src/
-│   ├── public/
-│   └── package.json
-│
+├── migrations/             # Alembic migration environment
 ├── server/                 # FastAPI backend
-│   ├── app/
-│   ├── alembic/
-│   ├── requirements.txt
-│   ├── .env
-│   └── main.py
-│
+├── alembic.ini             # Alembic config used from the repository root
 └── README.md
 ```
 
----
+## Backend Setup
 
-# Features
+### 1. Create and activate a virtual environment
 
-- Employee Management
-- User Authentication
-- JWT Authorization
-- Password Encryption (bcrypt)
-- REST API
-- Database Migrations with Alembic
-- MySQL Database Integration
-- Environment Variable Configuration
-
----
-
-# Backend Installation
-
-## 1. Navigate to server
+From the repository root:
 
 ```bash
-cd server
+python -m venv .venv
 ```
 
-## 2. Create virtual environment
+Windows PowerShell:
 
-### Windows
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS or Linux:
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
+source .venv/bin/activate
 ```
 
-### Linux/macOS
+### 2. Install backend dependencies
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+pip install -r server/requirements.txt
 ```
 
----
+### 3. Configure the backend environment
 
-## 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-requirements.txt
-
-```
-fastapi
-uvicorn
-sqlalchemy
-pymysql
-python-dotenv
-passlib[bcrypt]
-python-jose
-alembic
-```
-
----
-
-## 4. Configure Environment Variables
-
-Create a `.env` file inside the `server` directory.
-
-Example:
+Create a file at `server/.env` and set your database and auth values.
 
 ```env
-DATABASE_URL=mysql+pymysql://username:password@localhost/hrm_db
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_DB=hrm_db
 
-SECRET_KEY=your_secret_key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+SECRET_KEY=replace-with-a-long-random-secret
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=7
+COOKIE_SECURE=false
+COOKIE_SAMESITE=lax
+SQL_ECHO=false
+
+# Optional: allow additional frontend origins
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
 ```
 
----
+Notes:
 
-## 5. Run Database Migrations
+- `MYSQL_*` values are used to build the SQLAlchemy connection string.
+- `SECRET_KEY` should be changed before using the app outside local development.
+- `ALLOWED_ORIGINS` controls which browser origins can call the backend.
+
+### 4. Create the database
+
+Create the MySQL database referenced by `MYSQL_DB` before starting the app.
+
+### 5. Run migrations
+
+Run Alembic from the repository root so it can use the top-level `alembic.ini`:
 
 ```bash
 alembic upgrade head
 ```
 
----
+### 6. Start the backend
 
-## 6. Start the FastAPI Server
+From the repository root:
 
 ```bash
-uvicorn main:app --reload
+uvicorn server.main:app --reload
 ```
 
-Server runs at:
+Backend URLs:
 
-```
-http://127.0.0.1:8000
-```
+- API root: `http://127.0.0.1:8000`
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
+- WebSocket events: `ws://localhost:8000/ws/events`
 
-Swagger Documentation:
+## Frontend Setup
 
-```
-http://127.0.0.1:8000/docs
-```
-
-ReDoc Documentation:
-
-```
-http://127.0.0.1:8000/redoc
-```
-
----
-
-# Frontend Installation
-
-Navigate to client
+### 1. Install frontend dependencies
 
 ```bash
 cd client
-```
-
-Install dependencies
-
-```bash
 npm install
 ```
 
-Run development server
+### 2. Configure optional frontend environment variables
+
+Create `client/.env.local` only if you want to override the defaults.
+
+```env
+VITE_API_URL=http://localhost:8000/api
+VITE_WS_URL=ws://localhost:8000/ws/events
+```
+
+If these are not set, the frontend uses:
+
+- `http://localhost:8000/api` in development
+- `/api` in production
+- `ws://localhost:8000/ws/events` in development for dashboard realtime updates
+
+### 3. Start the frontend
 
 ```bash
 npm run dev
 ```
 
-or if using Create React App
+The Vite dev server usually runs at `http://localhost:5173`.
+
+## Default Local Accounts
+
+The backend initialization script seeds two users when the database is initialized:
+
+- Admin user: `admin` / `Admin@2026!HRM`
+- HR manager user: `hr` / `Hr@2026!HRM`
+
+These defaults are intended for local development only. Change them before any shared or production use.
+
+## Common Commands
+
+Backend:
 
 ```bash
-npm start
+uvicorn server.main:app --reload
+alembic upgrade head
+python server/init_db.py
 ```
 
-Frontend runs at
+Frontend:
 
-```
-http://localhost:3000
-```
-
-or
-
-```
-http://localhost:5173
+```bash
+cd client
+npm run dev
+npm run build
+npm run lint
 ```
 
-depending on your React setup.
+## How It Works
 
----
+- The frontend sends requests through a shared Axios client in `client/src/api/hrmApi.js`.
+- Authentication is handled with HTTP-only access and refresh cookies.
+- Protected backend routes depend on the current user and role checks.
+- The startup routine in `server/init_db.py` creates missing tables, applies lightweight schema sync, and seeds default local users.
 
-# Database
+## Troubleshooting
 
-Supported database:
+- If login fails, confirm the MySQL database exists and the backend can connect using the values in `server/.env`.
+- If the frontend cannot reach the backend, check `VITE_API_URL` and `ALLOWED_ORIGINS`.
+- If websocket updates do not appear, verify that the backend is running and that `VITE_WS_URL` matches the backend host and port.
+- If Alembic cannot find the config, make sure you run `alembic upgrade head` from the repository root.
 
-- MySQL
+## API Documentation
 
-ORM:
+FastAPI generates interactive API docs automatically:
 
-- SQLAlchemy
-
-Migration Tool:
-
-- Alembic
-
----
-
-# Authentication
-
-The application uses:
-
-- JWT (JSON Web Token)
-- Password hashing using bcrypt
-- Secure authentication with python-jose
-
----
-
-# API Documentation
-
-FastAPI automatically generates API documentation.
-
-Swagger UI
-
-```
-http://localhost:8000/docs
-```
-
-ReDoc
-
-```
-http://localhost:8000/redoc
-```
-
----
-
-# Backend Dependencies
-
-| Package | Purpose |
-|----------|---------|
-| FastAPI | API Framework |
-| Uvicorn | ASGI Server |
-| SQLAlchemy | ORM |
-| PyMySQL | MySQL Driver |
-| python-dotenv | Environment Variables |
-| passlib[bcrypt] | Password Hashing |
-| python-jose | JWT Authentication |
-| Alembic | Database Migrations |
-
----
-
-# Development Workflow
-
-1. Clone the repository
-2. Set up the backend
-3. Configure the `.env` file
-4. Run database migrations
-5. Start the FastAPI server
-6. Set up the React frontend
-7. Start the React development server
-
----
-
-# Future Improvements
-
-- Leave Management
-- Payroll Management
-- Attendance Tracking
-- Performance Evaluation
-- Email Notifications
-- Role-Based Access Control (RBAC)
-- Dashboard Analytics
-- Docker Support
-- CI/CD Pipeline
-- Kubernetes Deployment
-
----
-
-# License
-
-This project is licensed under the MIT License.
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
