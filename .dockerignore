@@ -1,0 +1,60 @@
+# Version Control System
+.git
+.gitignore
+.gitattributes
+
+# Environment Secrets & Local Parameters
+.env
+.env.*
+!.env.example
+*.local
+
+# Infrastructure Configurations
+terraform/
+.terraform/
+terraform.tfstate*
+k8s/
+helm/
+kubernetes/
+
+# Documentation and Repository Assets
+docs/
+*.md
+LICENSE
+
+# Python / FastAPI Backend Exclusions
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+ENV/
+env/
+server/.venv/
+server/env/
+.pytest_cache/
+.htmlcov/
+htmlcov/
+
+# Node.js / React Frontend Exclusions
+**/node_modules/
+client/node_modules/
+client/dist/
+client/build/
+.npm
+.yarn/
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System & Text Editor Artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
