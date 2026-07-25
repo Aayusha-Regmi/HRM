@@ -15,7 +15,7 @@ const getWebSocketUrl = () => {
   }
 
   if (import.meta.env.DEV) {
-    return 'ws://localhost:8000/ws/events';
+    return 'ws://server:8000/ws/events';
   }
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
