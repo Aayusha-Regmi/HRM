@@ -1,0 +1,70 @@
+services:
+#db service setup
+  mysql:
+    container_name: mysql_cont
+    image: mysql:latest
+    ports: 
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=hrm_database
+    networks:
+      - hrm-network
+    volumes:
+    - mysql-data:/var/lib/mysql
+    restart: always
+    healthcheck:
+       test: ["CMD", "mysqladmin", "ping", "-h","localhost", "-uroot", "-proot"]
+       interval: 5s
+       timeout: 10s
+       retries: 5
+       start_period: 60s
+
+#backend service setup
+  server:
+    container_name: server_cont
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - hrm-network
+    depends_on: 
+      mysql:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+       test: ["CMD-SHELL", "curl http://localhost:8000/health || exit 1"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
+       start_period: 30s
+
+  client:
+    container_name: client_cont
+    build:
+      context: ./client
+    ports:
+      - "80:80"
+    networks:
+      - hrm-network
+    restart: always
+    depends_on:
+      - server
+
+networks:
+  hrm-network:
+
+volumes:
+  mysql-data:
+
+
+      
+
+
+
+  
+
