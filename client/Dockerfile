@@ -24,7 +24,7 @@ COPY /nginx/default.conf  /etc/nginx/conf.d/default.conf
 #Copy build files
 COPY --from=builder /client/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8000
 
 
 

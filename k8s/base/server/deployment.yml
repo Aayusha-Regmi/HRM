@@ -1,0 +1,71 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata: 
+  name: server-deployment
+  namespace: hrm-namespace
+  labels:
+    app: server
+specs:
+  replicas: 1
+  selectors:
+    matchLabels: 
+      app: server
+  
+  templates:
+    metadata:
+      labels:
+        app: server
+
+    
+    specs:
+      initContainer:
+      - name: test-mysql-initContainer
+        image: busybox:1.36.1
+        commands:
+          -sh
+          -c
+          -"until nc -z mysql:3306; do echo Waiting for mysql; sleep 2;done"
+      containers:
+        - name: server-container
+          image: hrm-server:local
+          imagePullPolicy:
+          ports:
+            containerPort: "8000"
+          env_from:
+            - configMapRef:
+              name: configmaps-server
+            - secretRef: 
+              name: secrets-server
+        
+          readinessProbe:
+            httpGet:
+              - path: /health
+              - port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          livelinessProbe:
+            httpGet:
+              - path: /health
+              - port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThresholds: 5
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+
+      
+
+
+
+        
+
