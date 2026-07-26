@@ -27,3 +27,6 @@ __pycache__/
 *.pyc
 .env
 *.log
+public-key.txt
+terraform/
+*.tf
