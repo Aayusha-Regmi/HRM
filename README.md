@@ -6,9 +6,7 @@ A highly resilient Human Resource Management (HRM) application engineered with a
 
 ## System Architecture & Interface Overview
 
-<p align="center">
-  <img src="docs/images/department_page.png" alt="System Dashboard - Department Layout" width="100%">
-</p>
+![Dashboard](docs/images/department_page.png)
 
 ```text
 +--------------------------------------------------------------------------+
