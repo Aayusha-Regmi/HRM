@@ -31,3 +31,6 @@ public-key.txt
 terraform/
 *.tf
 secret.yml
+
+#docs
+images/
