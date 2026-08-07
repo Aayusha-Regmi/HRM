@@ -89,7 +89,18 @@ cp .env.example .env
 ```
 *Open the newly created `.env` file and adjust the database credentials, application secrets, and configurations to match your local parameters.*
 
-#### Step 3: Initialize the Container Stack
+
+#### Step 3: setup with required container, orchestraion tools, etc
+Make the setup script executable
+```bash
+chmod +x ./HRM/setup.sh
+```
+Run the installation script with:
+```bash
+./HRM/setup.sh
+```
+
+#### Step 4: Initialize the Container Stack
 Ensure your Docker Engine daemon is active, then trigger the automated build infrastructure:
 ```bash
 docker compose up --build -d
@@ -97,7 +108,8 @@ docker compose up --build -d
 *   `--build`: Invalidates cached contexts and completely recompiles local system code variations.
 *   `-d`: Runs the service dependencies decoupled in the background, freeing your terminal interface.
 
-#### Step 4: Validate Deployment Lifecycles
+
+#### Step 5: Validate Deployment Lifecycles
 Verify that all services are online and reporting healthy:
 ```bash
 docker compose ps
