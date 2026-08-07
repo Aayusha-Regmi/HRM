@@ -5,55 +5,52 @@ metadata:
   namespace: hrm-namespace
   labels:
     app: server
-specs:
+spec:
   replicas: 1
-  selectors:
+  selector:
     matchLabels: 
       app: server
   
-  templates:
+  template:
     metadata:
       labels:
         app: server
 
     
-    specs:
-      initContainer:
-      - name: test-mysql-initContainer
+    spec:
+      initContainers:
+      - name: test-mysql-init
         image: busybox:1.36.1
-        commands:
-          -sh
-          -c
-          -"until nc -z mysql:3306; do echo Waiting for mysql; sleep 2;done"
+        command: ["sh", "-c", "until nc -z mysql:3306; do echo waiting for mysql; sleep 2; done"]
       containers:
         - name: server-container
           image: hrm-server:local
-          imagePullPolicy:
+          imagePullPolicy: IfNotPresent
           ports:
-            containerPort: "8000"
-          env_from:
+            - containerPort: 8000
+          envFrom:
             - configMapRef:
-              name: configmaps-server
+                name: configmaps-server
             - secretRef: 
-              name: secrets-server
+                name: secrets-server
         
           readinessProbe:
             httpGet:
-              - path: /health
-              - port: 8000
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 5
 
-          livelinessProbe:
+          livenessProbe:
             httpGet:
-              - path: /health
-              - port: 8000
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThresholds: 5
+            failureThreshold: 5
           resources:
             requests:
               cpu: "50m"
