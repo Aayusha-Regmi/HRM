@@ -81,9 +81,9 @@ The application populates your database automatically with two seeded testing ac
 Choose the deployment path you want to use, then install the matching tools.
 
 For the Docker Compose path:
-*   **Docker Desktop** (macOS / Windows) or **Docker Engine** (Linux) v20.10.0 or newer.
-*   **Docker Compose v2**.
-*   **Git**.
+*   **Docker Desktop** (macOS / Windows) or **Docker Engine** (Linux) v20.10.0 or newer
+*   **Docker Compose v2**
+*   **Git**
 
 For the Kubernetes path:
 *   **Docker Desktop** or **Docker Engine**.
