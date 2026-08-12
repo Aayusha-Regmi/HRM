@@ -1,5 +1,5 @@
 #Stage1: Build the backend app
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 #Create directory to add build files
 WORKDIR /app
 #Copy requirements file to build directory
@@ -26,12 +26,14 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY ./alembic.ini ./alembic.ini
 COPY ./server ./server
 COPY ./migrations ./migrations
-COPY ./server/entrypoint.sh ./entrypoint.sh
-COPY .env .env
+COPY ./server/entrypoint.sh ./server/entrypoint.sh
+COPY ./server/.env ./server/.env
 
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./server/entrypoint.sh
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["./entrypoint.sh"]
+
+ENTRYPOINT ["./server/entrypoint.sh"]
 
 
 

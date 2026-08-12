@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hrm-ingress
+  namespace: hrm-namespace
+  annotations:
+    # Forces NGINX to route specific sub-paths correctly without stripping them
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # 1. Routes API traffic to the Python backend server
+      - path: /api/
+        pathType: Prefix
+        backend:
+          service:
+            name: server-service
+            port:
+              number: 8000
+      # 2. Routes API documentation traffic to the backend server
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: server-service
+            port:
+              number: 8000
+      # 3. Routes all other traffic (web interface) to the frontend client
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: client-service
+            port:
+              number: 80

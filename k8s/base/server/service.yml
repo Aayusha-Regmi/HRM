@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: server-service
+  name: server-service #Had to change in accordance to what nginx upstream expects
   namespace: hrm-namespace
   labels: 
     app: server

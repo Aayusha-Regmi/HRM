@@ -1,5 +1,5 @@
 #Stage1: Build the react app
-FROM node:22-alpine as builder
+FROM node:22-alpine AS builder
 
 #Create client-build directory
 WORKDIR /client

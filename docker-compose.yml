@@ -1,5 +1,4 @@
 services:
-#db service setup
   mysql:
     container_name: mysql_cont
     image: mysql:latest
@@ -11,16 +10,14 @@ services:
     networks:
       - hrm-network
     volumes:
-    - mysql-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
     restart: always
     healthcheck:
-       test: ["CMD", "mysqladmin", "ping", "-h","localhost", "-uroot", "-proot"]
-       interval: 5s
-       timeout: 10s
-       retries: 5
-       start_period: 60s
+       test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "-u", "root", "-proot"]
+       interval: 2s
+       timeout: 5s
+       retries: 30
 
-#backend service setup
   server:
     container_name: server_cont
     build:
@@ -37,7 +34,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-       test: ["CMD-SHELL", "curl http://localhost:8000/health || exit 1"]
+       test: ["CMD-SHELL", "curl http://localhost:8000/ || exit 1"]
        interval: 10s
        timeout: 5s
        retries: 5
@@ -60,11 +57,3 @@ networks:
 
 volumes:
   mysql-data:
-
-
-      
-
-
-
-  
-

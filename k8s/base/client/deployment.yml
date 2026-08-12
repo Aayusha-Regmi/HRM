@@ -20,11 +20,11 @@ spec:
         image: hrm-client:local
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 8000
+        - containerPort: 80
         readinessProbe:
           httpGet:
             path: /
-            port: 8000
+            port: 80
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:

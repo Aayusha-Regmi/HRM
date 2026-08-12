@@ -10,3 +10,7 @@ data:
   COOKIE_SAMESITE: "lax"
   SQL_ECHO: "false"
  
+  DEFAULT_HR_EMAIL: "hr@hrmapp.com"
+  DEFAULT_HR_ROLE: "hr_manager"
+  DEFAULT_ADMIN_EMAIL: "admin@hrmapp.com"
+  DEFAULT_ADMIN_ROLE: "admin"
