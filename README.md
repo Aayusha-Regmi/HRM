@@ -136,3 +136,98 @@ docker compose exec server bash
 # Tear down container infrastructure and cleanly erase persistent virtual network paths
 docker compose down -v
 ```
+
+---
+
+## Kubernetes (K8s) Deployment Guide
+
+This repository also includes Kubernetes manifests under `k8s/` for running the HRM system on a local Kubernetes cluster (Kind) with NGINX Ingress.
+
+### 1. What We Are Using
+* **Kubernetes** manifests in `k8s/base/` for `client`, `server`, and `mysql`.
+* **Kind** (Kubernetes in Docker) using `k8s/kind-config.yml` for local cluster creation.
+* **NGINX Ingress Controller** for HTTP routing into the cluster.
+* **Horizontal Pod Autoscaler (HPA)** for backend scaling (`k8s/base/server/hpa.yml`).
+* **ConfigMap and Secret resources** for server configuration and sensitive environment values.
+
+### 2. Kubernetes Prerequisites
+Install these tools on your machine before deploying with K8s:
+* **Docker Engine/Desktop** (required by Kind)
+* **kubectl**
+* **kind**
+
+### 3. Setup Steps
+
+#### Step 1: Create a local Kind cluster
+```bash
+kind create cluster --config k8s/kind-config.yml
+```
+
+#### Step 2: Install NGINX Ingress Controller
+Use the official install manifest for Kind:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.3/deploy/static/provider/kind/deploy.yaml
+```
+
+#### Step 3: Wait for ingress controller to be ready
+```bash
+kubectl wait --namespace ingress-nginx \
+	--for=condition=ready pod \
+	--selector=app.kubernetes.io/component=controller \
+	--timeout=180s
+```
+
+#### Step 4: Deploy HRM resources
+```bash
+kubectl apply -f k8s/base/namespace.yml
+kubectl apply -f k8s/base/mysql/secret.yml
+kubectl apply -f k8s/base/mysql/mysql.yml
+kubectl apply -f k8s/base/server/secret.yml
+kubectl apply -f k8s/base/server/configmap.yml
+kubectl apply -f k8s/base/server/deployment.yml
+kubectl apply -f k8s/base/server/service.yml
+kubectl apply -f k8s/base/server/hpa.yml
+kubectl apply -f k8s/base/client/deployment.yml
+kubectl apply -f k8s/base/client/service.yml
+kubectl apply -f k8s/base/ingress.yml
+```
+
+### 4. Use and Verification
+```bash
+# Check pods and services
+kubectl get pods -n hrm
+kubectl get svc -n hrm
+
+# Check ingress
+kubectl get ingress -n hrm
+
+# Port-forward ingress controller to access cluster ingress on localhost:8080
+kubectl port-forward --address 0.0.0.0 service/ingress-nginx-controller 8080:80 -n ingress-nginx &
+
+# Watch backend scaling status
+kubectl get hpa -n hrm -w
+```
+
+If your ingress host is mapped locally, open the configured frontend host/path from `k8s/base/ingress.yml` in your browser.
+
+### 5. Useful K8s Operations
+```bash
+# View all resources
+kubectl get all -n hrm
+
+# Follow backend logs
+kubectl logs -n hrm deployment/server --follow
+
+# Remove all HRM resources
+kubectl delete -f k8s/base/ingress.yml
+kubectl delete -f k8s/base/client/service.yml
+kubectl delete -f k8s/base/client/deployment.yml
+kubectl delete -f k8s/base/server/hpa.yml
+kubectl delete -f k8s/base/server/service.yml
+kubectl delete -f k8s/base/server/deployment.yml
+kubectl delete -f k8s/base/server/configmap.yml
+kubectl delete -f k8s/base/server/secret.yml
+kubectl delete -f k8s/base/mysql/mysql.yml
+kubectl delete -f k8s/base/mysql/secret.yml
+kubectl delete -f k8s/base/namespace.yml
+```
