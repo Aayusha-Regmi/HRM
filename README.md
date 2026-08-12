@@ -20,7 +20,7 @@ The workspace is organized into distinct layer responsibilities:
 *   `server/`: FastAPI service driving core CRUD logic, SQLAlchemy models, and API routers.
 *   `migrations/` and `alembic.ini`: Alembic schema migrations for database versioning.
 *   `docker-compose.yml`: Local Docker Compose stack for the application and database.
-*   `k8s/`: Kubernetes manifests for local Kind-based deployment.
+*   `k8s/`: Kubernetes deployment assets, including the Helm chart package and local Kind-based manifests.
 
 ---
 
@@ -41,6 +41,9 @@ HRM/
 │   │   ├── client/
 │   │   ├── mysql/
 │   │   └── server/
+│   ├── helm-charts/
+│   │   ├── templates/
+│   │   └── values.yaml
 │   └── kind-config.yml
 ├── migrations/
 ├── scripts/
@@ -96,7 +99,7 @@ You do not need to install Python, Node.js, or MySQL on your host machine for ei
 This repository supports two local run modes:
 
 1. **Docker Compose** for the simplest local stack.
-2. **Kubernetes** with Kind and NGINX Ingress for a cluster-based deployment.
+2. **Helm** with Kind, NGINX Ingress, or a managed cluster for the Kubernetes deployment path.
 
 Pick the section below that matches your workflow.
 
@@ -162,95 +165,54 @@ docker compose down -v
 
 ---
 
-## Kubernetes Deployment
+## Helm Chart Deployment (Alternative Production Path)
 
-Use this path when you want to run the HRM system on a local Kubernetes cluster with Kind and NGINX Ingress.
+Use this path when you want to deploy the application stack using Helm package management. This converts the manifests into dynamic templates, allowing for multi-environment deployments (Dev, QA, Prod) from a unified values canvas.
 
-### 1. What We Are Using
-* **Kubernetes** manifests in `k8s/base/` for `client`, `server`, and `mysql`.
-* **Kind** (Kubernetes in Docker) using `k8s/kind-config.yml` for local cluster creation.
-* **NGINX Ingress Controller** for HTTP routing into the cluster.
-* **Horizontal Pod Autoscaler (HPA)** for backend scaling (`k8s/base/server/hpa.yml`).
-* **ConfigMap and Secret resources** for server configuration and sensitive environment values.
+### 1. Prerequisites
+*   **Helm v3** installed on your host machine.
+*   An active Kubernetes cluster context (`kind`, `minikube`, or a managed cloud cluster).
 
-### 2. Kubernetes Prerequisites
-Install these tools on your machine before deploying with Kubernetes:
-* **Docker Engine/Desktop** (required by Kind)
-* **kubectl**
-* **kind**
-
-### 3. Setup Steps
-
-#### Step 1: Create a local Kind cluster
+### 2. Verify and Lint the Configuration
+Before executing your deployment, run a local syntax audit and template compilation check:
 ```bash
-kind create cluster --config k8s/kind-config.yml
+# Check chart for syntax errors and best practices
+helm lint ./k8s/helm-charts
+
+# Render the compiled templates onto your screen to verify variable mapping
+helm template hrm ./k8s/helm-charts --debug
 ```
 
-#### Step 2: Install NGINX Ingress Controller
-Use the official install manifest for Kind:
+### 3. Deploy the Chart Pack
+The chart keeps the sensitive parameter keys blank in `values.yaml` and expects you to supply the runtime credentials during install. Use single quotes (`'`) around the values to avoid shell expansion issues:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.3/deploy/static/provider/kind/deploy.yaml
-```
-
-#### Step 3: Wait for ingress controller to be ready
-```bash
-kubectl wait --namespace ingress-nginx \
-	--for=condition=ready pod \
-	--selector=app.kubernetes.io/component=controller \
-	--timeout=180s
-```
-
-#### Step 4: Deploy HRM resources
-```bash
-kubectl apply -f k8s/base/namespace.yml
-kubectl apply -f k8s/base/mysql/secret.yml
-kubectl apply -f k8s/base/mysql/mysql.yml
-kubectl apply -f k8s/base/server/secret.yml
-kubectl apply -f k8s/base/server/configmap.yml
-kubectl apply -f k8s/base/server/deployment.yml
-kubectl apply -f k8s/base/server/service.yml
-kubectl apply -f k8s/base/server/hpa.yml
-kubectl apply -f k8s/base/client/deployment.yml
-kubectl apply -f k8s/base/client/service.yml
-kubectl apply -f k8s/base/ingress.yml
+helm upgrade --install hrm ./k8s/helm-charts \
+	-n hrm-namespace \
+	--create-namespace \
+	--set secrets.mysqlPassword='your_secure_db_password' \
+	--set secrets.adminPassword='Admin@2026!HRM' \
+	--set secrets.hrPassword='Hr@2026!HRM'
 ```
 
 ### 4. Use and Verification
 ```bash
-# Check pods and services
-kubectl get pods -n hrm
-kubectl get svc -n hrm
+# Watch deployment pods cycle into a Running (1/1) status state
+kubectl get pods -n hrm-namespace -w
 
-# Check ingress
-kubectl get ingress -n hrm
-
-# Port-forward ingress controller to access cluster ingress on localhost:8080
-kubectl port-forward --address 0.0.0.0 service/ingress-nginx-controller 8080:80 -n ingress-nginx &
-
-# Watch backend scaling status
-kubectl get hpa -n hrm -w
+# Bridge your local laptop network to your cluster service host
+kubectl port-forward service/client-service 32080:80 -n hrm-namespace --address 0.0.0.0
 ```
+Open your browser and navigate to `http://localhost:32080`.
 
-If your ingress host is mapped locally, open the configured frontend host/path from `k8s/base/ingress.yml` in your browser.
-
-### 5. Useful K8s Operations
+### 5. Common Helm Operations
 ```bash
-# View all resources
-kubectl get all -n hrm
+# View active revision histories and deployment statuses
+helm history hrm -n hrm-namespace
 
-# Follow backend logs
-kubectl logs -n hrm deployment/server --follow
+# Instantly revert your infrastructure state backwards to a previous safe revision
+helm rollback hrm <revision-number> -n hrm-namespace
 
-# Remove all HRM resources
-kubectl delete -f k8s/base/ingress.yml
-kubectl delete -f k8s/base/client/service.yml
-kubectl delete -f k8s/base/client/deployment.yml
-kubectl delete -f k8s/base/server/hpa.yml
-kubectl delete -f k8s/base/server/service.yml
-kubectl delete -f k8s/base/server/deployment.yml
-kubectl delete -f k8s/base/server/configmap.yml
-kubectl delete -f k8s/base/server/secret.yml
-kubectl delete -f k8s/base/mysql/mysql.yml
-kubectl delete -f k8s/base/mysql/secret.yml
-kubectl delete -f k8s/base/namespace.yml
+# Wipe the application package cleanly from your cluster environment
+helm uninstall hrm -n hrm-namespace
 ```
+
