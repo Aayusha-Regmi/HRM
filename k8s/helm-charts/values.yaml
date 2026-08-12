@@ -1,0 +1,45 @@
+#central config file for values
+
+global:
+  environment: local
+
+client:
+  replicas: 1
+  image: hrm-client
+  tag: local
+  imagePullPolicy: IfNotPresent
+  containerPort: 80
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+server:
+  replicas: 1
+  image: hrm-server
+  tag: local
+  imagePullPolicy: IfNotPresent
+  containerPort: 8000
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+#Dynamic ingestion of sensitive credentials using --set flag during deployment.
+secrets:
+  mysqlUser: hrm_user
+  mysqlPassword:
+  adminPassword:
+  hrPassword:
+
+mysql:
+  replicas: 1
+  image: mysql
+  tag: "8.0"
+  storage: "2Gi"

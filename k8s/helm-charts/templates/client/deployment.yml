@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-deployment
+  #makes template usable for multi environments like hrm-qa, hrm-dev
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: client
+spec:
+  #in production whileusing EKS we often use HA to scale the pod.
+  replicas: {{ .Values.client.replicas }}
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: client
+        # On every code push, Jenkins creates brand new image and build number, separating allows only tag be overwritten by jenkins on deployment"
+        image: "{{ .Values.client.image }}:{{ .Values.client.tag }}"
+        # at EKS setup we must pull latest image from the registry unlike at kind setup where we brought images from kind's local storage
+        imagePullPolicy: {{ .Values.client.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.client.containerPort }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.client.containerPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+{{ toYaml .Values.client.resources | indent 10 }}

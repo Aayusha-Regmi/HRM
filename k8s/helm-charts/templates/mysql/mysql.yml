@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata: 
   name: mysql
-  namespace: hrm-namespace
+  namespace: {{ .Release.Namespace }}
 spec:
   selector: 
     app: mysql-db
@@ -18,13 +18,13 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql-stateful-set
-  namespace: hrm-namespace
+  namespace: {{ .Release.Namespace }} 
 spec:
   selector: 
     matchLabels:
       app: mysql-db
   serviceName: "mysql"
-  replicas: 1
+  replicas: {{ .Values.mysql.replicas }}
   template:
     metadata:
       labels:
@@ -32,21 +32,21 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:latest
+          image: "{{ .Values.mysql.image }}:{{ .Values.mysql.tag }}" 
           envFrom:
             - secretRef: 
                 name: hrm-mysql-secrets
           ports:
             - containerPort: 3306
           volumeMounts:
-            - name: mysql-data
-              mountPath: /var/lib/mysql
+            - name: mysql-data 
+              mountPath: /var/lib/mysql 
   volumeClaimTemplates:
     - metadata:
         name: mysql-data
       spec:
         accessModes: [ "ReadWriteOnce" ]      
-        resources:
+        resources: 
           requests: 
-            storage: 2Gi 
+            storage: {{ .Values.mysql.storage | quote }}
 

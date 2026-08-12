@@ -2,11 +2,11 @@ kind: Deployment
 apiVersion: apps/v1
 metadata: 
   name: server-deployment
-  namespace: hrm-namespace
+  namespace: {{ .Release.Namespace }}
   labels:
     app: server
 spec:
-  replicas: 1
+  replicas: {{ .Values.server.replicas }}
   selector:
     matchLabels: 
       app: server
@@ -24,10 +24,10 @@ spec:
         command: ["sh", "-c", "until nc -z mysql:3306; do echo waiting for mysql; sleep 2; done"]
       containers:
         - name: server-container
-          image: hrm-server:local
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.server.image }}:{{ .Values.server.tag }}"
+          imagePullPolicy: {{ .Values.server.imagePullPolicy }}
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.server.containerPort }}
           envFrom:
             - configMapRef:
                 name: configmaps-server
@@ -37,7 +37,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 8000
+              port: {{ .Values.server.containerPort }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -46,18 +46,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 8000
+              port: {{ .Values.server.containerPort }}
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 5
           resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "200m"
-              memory: "128Mi"
+{{ toYaml .Values.server.resources | indent 12 }}
 
 
       
