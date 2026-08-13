@@ -25,7 +25,8 @@ sudo apt install -y \
     wget \
     gnupg \
     ca-certificates \
-    apt-transport-https
+    apt-transport-https \
+    software-properties-common
 
 # -----------------------------
 # Docker
@@ -109,6 +110,31 @@ else
 fi
 
 # -----------------------------
+# Terraform
+# -----------------------------
+# Reference: https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+if command -v terraform >/dev/null 2>&1; then
+    echo "Terraform already installed."
+else
+    echo "Installing Terraform..."
+
+    # Install HashiCorp's GPG key
+    wget -O- https://apt.releases.hashicorp.com/gpg | \
+        gpg --dearmor | \
+        sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+
+    # Add the official HashiCorp repository
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | \
+        sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+    # Install Terraform from the new repository
+    sudo apt update
+    sudo apt-get install -y terraform
+
+    terraform -version
+fi
+
+# -----------------------------
 # Jenkins
 # -----------------------------
 if sudo docker ps -a --format '{{.Names}}' | grep -q '^jenkins$'; then
@@ -145,6 +171,7 @@ kubectl version --client
 kind --version
 helm version --short
 aws --version
+terraform -version
 
 echo
 echo "========================================="
@@ -156,5 +183,3 @@ echo "If Docker was installed for the first time,"
 echo "run the following command or log out and back in:"
 echo
 echo "    newgrp docker"
-
-

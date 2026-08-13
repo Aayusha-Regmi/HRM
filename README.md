@@ -37,13 +37,10 @@ HRM/
 ├── docs/
 │   └── images/
 ├── k8s/
-│   ├── base/
-│   │   ├── client/
-│   │   ├── mysql/
-│   │   └── server/
 │   ├── helm-charts/
 │   │   ├── templates/
 │   │   └── values.yaml
+|   |   └── Chart.yaml
 │   └── kind-config.yml
 ├── migrations/
 ├── scripts/

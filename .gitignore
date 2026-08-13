@@ -31,6 +31,3 @@ public-key.txt
 terraform/
 *.tf
 
-
-#docs
-images/
