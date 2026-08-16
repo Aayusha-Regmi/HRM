@@ -28,6 +28,10 @@ __pycache__/
 .env
 *.log
 public-key.txt
-terraform/
-*.tf
 
+**/.terraform/
+
+# Also ignore state files and secret variable files
+*.tfstate
+*.tfstate.*
+*.tfvars
