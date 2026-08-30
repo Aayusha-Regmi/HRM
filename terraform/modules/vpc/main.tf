@@ -38,8 +38,10 @@ resource "aws_subnet" "public" {
 
   tags = {
 
-    Name  = "${var.project_prefix}-public-${count.index}"
+    Name = "${var.project_prefix}-public-${count.index}"
+    #this subnet is enabled for public internet facing service that is load balancer
     "kubernetes.io/role/elb" = "1"
+    #defines the cluster this subnet will be associated with
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
@@ -55,6 +57,7 @@ resource "aws_subnet" "private" {
 
   tags = {
     Name = "${var.project_prefix}-private-${count.index}"
+    
     "kubernetes.io/role/internal-elb" = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }

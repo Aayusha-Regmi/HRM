@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "eks_cluster_assume_role"{
 # Create the IAM role for EKS cluster
 
 resource "aws_iam_role" "eks_cluster_role"{
-    name = "eks_cluster_role"
+    name = "hrm-infra-eks-cluster-role"
     assume_role_policy= data.aws_iam_policy_document.eks_cluster_assume_role.json
 }
 
@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "eks_worker_assume_role"{
 
 # create the IAM role for worker nodes
 resource "aws_iam_role" "eks_worker_role"{
-    name= "eks_worker_role"
+    name= "hrm-infra-eks-worker-role"
     assume_role_policy= data.aws_iam_policy_document.eks_worker_assume_role.json
 }
 

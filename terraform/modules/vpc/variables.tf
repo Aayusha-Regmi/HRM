@@ -5,5 +5,9 @@ variable "project_prefix" {
 
 variable "vpc_cidr" {
     type = string
-    default = "VPC cidr range passed from root."
+    description = "VPC cidr range passed from root."
+}
+
+variable "cluster_name" {
+  type = string
 }
