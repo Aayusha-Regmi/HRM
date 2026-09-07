@@ -24,7 +24,7 @@ spec:
         command: ["sh", "-c", "until nc -z mysql:3306; do echo waiting for mysql; sleep 2; done"]
       containers:
         - name: server-container
-          image: "{{ .Values.server.image }}:{{ .Values.server.tag }}"
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
           imagePullPolicy: {{ .Values.server.imagePullPolicy }}
           ports:
             - containerPort: {{ .Values.server.containerPort }}

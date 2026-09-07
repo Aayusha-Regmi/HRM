@@ -41,12 +41,6 @@ spec:
           volumeMounts:
             - name: mysql-data 
               mountPath: /var/lib/mysql 
-  volumeClaimTemplates:
-    - metadata:
-        name: mysql-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]      
-        resources: 
-          requests: 
-            storage: {{ .Values.mysql.storage | quote }}
-
+      volumes:
+      - name: mysql-data
+        emptyDir: {}

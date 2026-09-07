@@ -5,8 +5,9 @@ global:
 
 client:
   replicas: 1
-  image: hrm-client
-  tag: local
+  image:
+    repository: 767397806614.dkr.ecr.us-east-1.amazonaws.com/hrm-infra-app
+    tag: client-latest
   imagePullPolicy: IfNotPresent
   containerPort: 80
   resources:
@@ -19,8 +20,9 @@ client:
 
 server:
   replicas: 1
-  image: hrm-server
-  tag: local
+  image:
+    repository: 767397806614.dkr.ecr.us-east-1.amazonaws.com/hrm-infra-app
+    tag: server-latest
   imagePullPolicy: IfNotPresent
   containerPort: 8000
   resources:

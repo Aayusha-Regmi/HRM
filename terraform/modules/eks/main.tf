@@ -1,10 +1,10 @@
 # -----------------------------------------------------------------
 # 1. EKS CONTROL PLANE (The Cluster Master)
 # -----------------------------------------------------------------
-
+//reads info abt the aws acc running terraform
 data "aws_caller_identity" "current" {}
 
-
+//creates eks control plane
 resource "aws_eks_cluster" "this" {
   name = var.cluster_name
 
@@ -40,11 +40,11 @@ resource "aws_eks_node_group" "this" {
   subnet_ids      = var.subnet_ids
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
+    desired_size = 1
+    max_size     = 2
     min_size     = 1
   }
-
+#rolling upgrade
   update_config {
     max_unavailable = 1
   }
@@ -69,8 +69,17 @@ resource "aws_eks_access_policy_association" "hrm_infra_user_admin" {
   cluster_name  = aws_eks_cluster.this.name
   principal_arn = aws_eks_access_entry.hrm_infra_user.principal_arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-
+  
   access_scope {
     type = "cluster"
   }
 }
+
+#Only if I were to use EBS as pv
+# resource "aws_eks_addon" "ebs_csi" {
+#   cluster_name             = aws_eks_cluster.this.name
+#   addon_name               = "aws-ebs-csi-driver"
+#   service_account_role_arn = aws_iam_role.ebs_csi_role.arn
+
+#   depends_on = [aws_eks_node_group.this]
+# }
