@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: k8s/helm-charts/templates/secrets/.*\.yml$
+    age: age1u5hh3xhe33efl33j2nylerg59g3em5l22m9hxlhg9hrvfkv3afuq98arn2
