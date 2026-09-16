@@ -35,7 +35,7 @@ server:
 
 #Dynamic ingestion of sensitive credentials using --set flag during deployment.
 secrets:
-  mysqlUser: hrm_user
+  mysqlUser: 
   mysqlPassword:
   adminPassword:
   hrPassword:
