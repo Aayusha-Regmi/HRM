@@ -245,14 +245,17 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
 ```
 
 ### 5. Deploy the Application Helm Chart
-Deploy the application manifests. Ensure `k8s/helm-charts/templates/ingress.yml` defines the expected custom domain under the `host` attribute.
+Deploy the application manifests. SOPS keeps production secrets encrypted in the repository and decrypts them temporarily during deployment. Ensure `k8s/helm-charts/templates/ingress.yml` defines the expected custom domain under the `host` attribute.
 
 ```bash
-helm upgrade --install hrm ./k8s/helm-charts \
-  --namespace hrm-namespace \
-  --create-namespace
+helm upgrade --install hrm-app ./k8s/helm-charts \
+  -f <(sops -d k8s/helm-charts/secrets/production.enc.yml) \
+  --namespace hrm \
+  --create-namespace \
+  --atomic \
+  --wait
 
-kubectl get ingress -n hrm-namespace
+kubectl get ingress -n hrm
 ```
 
 ### 6. Map the Domain to the Load Balancer
